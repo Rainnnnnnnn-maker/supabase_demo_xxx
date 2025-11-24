@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { deleteTodo, toggleCompleted, updateTitle } from '@/app/actions/todos'
 
 type Todo = {
@@ -13,20 +13,40 @@ type Todo = {
 export default function TodoItem({ todo }: { todo: Todo }) {
   const router = useRouter()
   const [title, setTitle] = useState(todo.title)
+  const [csrf, setCsrf] = useState<string>('')
+
+  useEffect(() => {
+    const name = 'csrf='
+    const existing = document.cookie
+      .split('; ')
+      .find((v) => v.startsWith(name))
+      ?.slice(name.length)
+    if (existing) {
+      setCsrf(existing)
+      return
+    }
+    const arr = new Uint8Array(32)
+    crypto.getRandomValues(arr)
+    const token = Array.from(arr)
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('')
+    document.cookie = `csrf=${token}; path=/; SameSite=Strict`
+    setCsrf(token)
+  }, [])
 
   async function onSaveTitle() {
     if (title === todo.title) return
-    await updateTitle(todo.id, title)
+    await updateTitle(todo.id, title, csrf)
     router.refresh()
   }
 
   async function onToggle() {
-    await toggleCompleted(todo.id, !todo.completed)
+    await toggleCompleted(todo.id, !todo.completed, csrf)
     router.refresh()
   }
 
   async function onDelete() {
-    await deleteTodo(todo.id)
+    await deleteTodo(todo.id, csrf)
     router.refresh()
   }
 
