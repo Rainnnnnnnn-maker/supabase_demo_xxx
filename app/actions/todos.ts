@@ -1,45 +1,55 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { supabaseServer } from '@/lib/supabase/server'
-import { cookies } from 'next/headers'
-
-async function validateCsrf(token: string) {
-  const c = (await cookies()).get('csrf')?.value ?? ''
-  if (!token || !c || token !== c) throw new Error('invalid csrf')
-}
+import { getSupabaseServerClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
 
 export async function addTodo(formData: FormData) {
+  const supabase = await getSupabaseServerClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('not authenticated')
   const title = String(formData.get('title') ?? '').trim()
-  const csrf = String(formData.get('csrf') ?? '')
-  await validateCsrf(csrf)
   if (!title) return
-  await supabaseServer.from('todos').insert({ title })
+  await supabase
+    .from('todos')
+    .insert({ title })
   revalidatePath('/')
 }
 
-export async function updateTitle(id: string, title: string, csrf: string) {
-  await validateCsrf(csrf)
-  const nextTitle = title.trim()
+export async function updateTitle(id: string, formData: FormData) {
+  const supabase = await getSupabaseServerClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('not authenticated')
+  const nextTitle = String(formData.get('title') ?? '').trim()
   if (!nextTitle) return
-  await supabaseServer
+  await supabase
     .from('todos')
     .update({ title: nextTitle, updated_at: new Date().toISOString() })
     .eq('id', id)
   revalidatePath('/')
 }
 
-export async function toggleCompleted(id: string, completed: boolean, csrf: string) {
-  await validateCsrf(csrf)
-  await supabaseServer
+export async function toggleCompleted(id: string, completed: boolean) {
+  const supabase = await getSupabaseServerClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('not authenticated')
+  await supabase
     .from('todos')
     .update({ completed, updated_at: new Date().toISOString() })
     .eq('id', id)
   revalidatePath('/')
 }
 
-export async function deleteTodo(id: string, csrf: string) {
-  await validateCsrf(csrf)
-  await supabaseServer.from('todos').delete().eq('id', id)
+export async function deleteTodo(id: string) {
+  const supabase = await getSupabaseServerClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('not authenticated')
+  await supabase.from('todos').delete().eq('id', id)
   revalidatePath('/')
+}
+
+export async function logout() {
+  const supabase = await getSupabaseServerClient()
+  await supabase.auth.signOut()
+  redirect('/login')
 }
