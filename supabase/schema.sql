@@ -15,7 +15,8 @@ create table if not exists public.todos (
 -- 2) RLS ON のまま全許可にする場合は以下のようなポリシーを設定
 --    alter table public.todos enable row level security;
 --    create policy "allow all" on public.todos for all using (true) with check (true);
--- 将来認証導入時は、ユーザーID列追加＋ポリシーをユーザー毎に制限
+
+-- STEP2:ユーザーID列追加＋ポリシーをユーザー毎に制限
 alter table public.todos enable row level security;
 alter table public.todos drop column if exists user_id;
 alter table public.todos add column user_id uuid not null default auth.uid();
