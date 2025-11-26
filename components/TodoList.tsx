@@ -5,7 +5,7 @@ import AddTodoForm from './AddTodoForm'
 
 type Todo = Database['public']['Tables']['todos']['Row']
 
-export default async function TodoList() {
+export default async function TodoList({ currentUserId }: { currentUserId: string }) {
   const supabase = await getSupabaseServerClient()
   const { data, error } = await supabase
     .from('todos')
@@ -23,7 +23,7 @@ export default async function TodoList() {
       <ul className="space-y-2">
         {((data ?? []) as Todo[]).map((t) => (
           <li key={t.id}>
-            <TodoItem todo={t} />
+            <TodoItem todo={t} currentUserId={currentUserId} />
           </li>
         ))}
       </ul>

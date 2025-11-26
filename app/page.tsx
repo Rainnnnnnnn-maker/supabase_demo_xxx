@@ -17,7 +17,7 @@ export default async function Page() {
           </button>
         </form>
       </div>
-      <TodoList />
+      <TodoList currentUserId={user.id} />
     </main>
   )
 }

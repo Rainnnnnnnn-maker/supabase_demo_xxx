@@ -1,17 +1,16 @@
 import { deleteTodo, toggleCompleted, updateTitle } from '@/app/actions/todos'
+import type { Database } from '@/database.types'
+import GuardedSubmitButton from './GuardedSubmitButton'
 
-type Todo = {
-  id: string
-  title: string
-  completed: boolean
-}
+type Todo = Database['public']['Tables']['todos']['Row']
 
-export default function TodoItem({ todo }: { todo: Todo }) {
+export default function TodoItem({ todo, currentUserId }: { todo: Todo; currentUserId: string }) {
+  const isOwner = todo.user_id === currentUserId
   return (
     <div className="flex items-center gap-2 rounded border border-gray-200 p-2">
       <form action={toggleCompleted.bind(null, todo.id, !todo.completed)}>
-        <button
-          type="submit"
+        <GuardedSubmitButton
+          isOwner={isOwner}
           className={
             todo.completed
               ? 'rounded bg-green-600 px-3 py-1 text-white'
@@ -19,7 +18,7 @@ export default function TodoItem({ todo }: { todo: Todo }) {
           }
         >
           {todo.completed ? '完了' : '未完了'}
-        </button>
+        </GuardedSubmitButton>
       </form>
       <form action={updateTitle.bind(null, todo.id)} className="flex flex-1 items-center gap-2">
         <input
@@ -30,14 +29,14 @@ export default function TodoItem({ todo }: { todo: Todo }) {
             (todo.completed ? 'line-through text-gray-500' : '')
           }
         />
-        <button type="submit" className="rounded bg-gray-200 px-3 py-1 text-gray-800">
+        <GuardedSubmitButton isOwner={isOwner} className="rounded bg-gray-200 px-3 py-1 text-gray-800">
           保存
-        </button>
+        </GuardedSubmitButton>
       </form>
       <form action={deleteTodo.bind(null, todo.id)}>
-        <button type="submit" className="rounded bg-red-600 px-3 py-1 text-white hover:bg-red-700">
+        <GuardedSubmitButton isOwner={isOwner} className="rounded bg-red-600 px-3 py-1 text-white hover:bg-red-700">
           削除
-        </button>
+        </GuardedSubmitButton>
       </form>
     </div>
   )
