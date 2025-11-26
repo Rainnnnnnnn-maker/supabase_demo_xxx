@@ -8,6 +8,7 @@ export type Database = {
           completed: boolean
           created_at: string
           updated_at: string
+          user_id: string
         }
         Insert: {
           id?: string
@@ -15,6 +16,7 @@ export type Database = {
           completed?: boolean
           created_at?: string
           updated_at?: string
+          user_id?: string
         }
         Update: {
           id?: string
@@ -22,6 +24,7 @@ export type Database = {
           completed?: boolean
           created_at?: string
           updated_at?: string
+          user_id?: string
         }
       }
     }

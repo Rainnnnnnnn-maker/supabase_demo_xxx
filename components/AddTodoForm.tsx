@@ -1,18 +1,9 @@
-'use client'
 
-import { useRouter } from 'next/navigation'
 import { addTodo } from '@/app/actions/todos'
 
 export default function AddTodoForm() {
-  const router = useRouter()
-
-  async function formAction(formData: FormData) {
-    await addTodo(formData)
-    router.refresh()
-  }
-
   return (
-    <form action={formAction} className="flex gap-2">
+    <form action={addTodo} className="flex gap-2">
       <input
         type="text"
         name="title"

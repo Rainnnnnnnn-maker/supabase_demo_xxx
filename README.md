@@ -1,9 +1,9 @@
-# Next.js + Supabase TODO（認証なし）
+# Next.js + Supabase TODO（認証あり／RLS ON）
 
 ## 概要
-- Next.js v16 App Router + TypeScript + Tailwind で最小TODO
-- Supabase(Postgres)へ `supabase-js` で直接CRUD（RLSは当面OFF/全許可）
-- 一覧は Server Component、変更は Server Actions
+- Next.js v16 App Router + TypeScript + Tailwind
+- Supabase + RLS（認証必須／ユーザー別データアクセス）
+- SSRクライアントは `@supabase/ssr` を使用（Dynamic APIs対応）
 
 ## セットアップ
 1. リポジトリを取得/作成
@@ -16,16 +16,19 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=<YOUR_NEXT_PUBLIC_SUPABASE_ANON_KEY>
 ## Supabase準備
 1. Supabaseダッシュボードで新規プロジェクトを作成
 2. Project Settings → API から Project URL と anon key を取得
-3. SQLエディタで `supabase/schema.sql` を実行
-   - `todos` テーブル作成
-   - RLSは一時的に OFF か、全許可 policy を設定（ファイルコメント参照）
+3. Authentication → Email を有効化（必要に応じてConfirm Email設定）
+4. SQLエディタで `supabase/schema.sql` を実行
+   - `todos` テーブルに `user_id` を追加（`default auth.uid()`）
+   - RLSをONにし、`user_id = auth.uid()` のポリシーを `select/insert/update/delete` に適用
 
 ## 開発起動
 ```
 npm i
 npm run dev
 ```
-- `http://localhost:3000` を開いて、TODOの追加/編集/完了/削除が動作することを確認
+- `http://localhost:3000` へアクセス
+- 未認証なら `/login` へ自動遷移
+- ログイン後、TODOの追加/編集/完了/削除が動作することを確認
 
 ## デプロイ（Vercel）
 1. Vercel にプロジェクトをインポート
@@ -40,15 +43,24 @@ supabase gen types typescript --project-id <プロジェクトref> > database.ty
 - `ref` はダッシュボードURL等から確認可能
 
 ## セキュリティ注意
-- 認証無し＋RLS OFF/全許可では、誰でも読み書き可能な公開データになります
-- 本番導入時は必ず RLS と認証（Supabase Auth 等）を設定
-- RLS切替ポイント：`todos` に `user_id` 等の所有者列を追加し、ポリシーをユーザー単位に制限
+- フロント側では `NEXT_PUBLIC_*` の公開キーのみを使用
+- Service Roleキーはサーバー専用で管理し、フロントに置かない
+- 機密値は環境変数で管理し、ログに出力しない
 
 ## 技術メモ
 - 変更系は Server Actions 内で `revalidatePath('/')` を実行
-- Client Components 側で `router.refresh()` を併用
-- Edge Runtime は使わず Node.js Runtime を前提
+- 一覧は Server Component（SSR）で常に最新を取得
+- middlewareでSSRセッション更新と未認証リダイレクトを前段制御
 
 ## 画面/操作
-- 上部入力で追加
-- 各行でタイトル編集（Enter/フォーカス外しで保存）、完了切替、削除
+- 上部入力で追加（Server Actions）
+- 各行で「保存」ボタンでタイトル更新／完了切替／削除（Server Actions）
+- 右上の「ログアウト」ボタンでサインアウト → `/login` へ遷移
+
+## テスト・Lint
+- E2Eテスト（Playwright）
+  - 実行: `npm run test:e2e`
+  - 環境変数: `BASE_URL`, `TEST_EMAIL`, `TEST_PASSWORD`
+- Lint（ESLint v9フラットコンフィグ）
+  - 実行: `npm run lint`
+  - 設定: `eslint.config.mjs`
