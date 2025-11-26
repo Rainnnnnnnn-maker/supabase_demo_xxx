@@ -22,7 +22,7 @@ alter table public.todos drop column if exists user_id;
 alter table public.todos add column user_id uuid not null default auth.uid();
 create index if not exists todos_user_id_idx on public.todos (user_id, created_at desc);
 drop policy if exists "allow all" on public.todos;
-create policy todos_select_own on public.todos for select using (user_id = auth.uid());
+create policy todos_select_all on public.todos for select using (true);
 create policy todos_insert_own on public.todos for insert with check (user_id = auth.uid());
 create policy todos_update_own on public.todos for update using (user_id = auth.uid());
 create policy todos_delete_own on public.todos for delete using (user_id = auth.uid());
