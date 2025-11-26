@@ -1,6 +1,7 @@
 import { deleteTodo, toggleCompleted, updateTitle } from '@/app/actions/todos'
 import type { Database } from '@/database.types'
 import GuardedSubmitButton from './GuardedSubmitButton'
+import OwnerBadge from './OwnerBadge'
 
 type Todo = Database['public']['Tables']['todos']['Row']
 
@@ -38,6 +39,7 @@ export default function TodoItem({ todo, currentUserId }: { todo: Todo; currentU
           削除
         </GuardedSubmitButton>
       </form>
+      <span className="ml-auto"><OwnerBadge userId={todo.user_id} /></span>
     </div>
   )
 }
