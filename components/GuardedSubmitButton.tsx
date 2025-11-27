@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 
 export default function GuardedSubmitButton({
@@ -14,15 +14,21 @@ export default function GuardedSubmitButton({
   message?: string
 }) {
   const [open, setOpen] = useState(false)
+  const buttonRef = useRef<HTMLButtonElement | null>(null)
   function onClick(e: React.MouseEvent<HTMLButtonElement>) {
     if (!isOwner) {
       e.preventDefault()
       setOpen(true)
     }
   }
+  function onClose() {
+    const form = buttonRef.current?.closest('form') as HTMLFormElement | null
+    form?.reset()
+    setOpen(false)
+  }
   return (
     <>
-      <button type="submit" className={className} onClick={onClick}>
+      <button ref={buttonRef} type="submit" className={className} onClick={onClick}>
         {children}
       </button>
       {open && (
@@ -32,7 +38,7 @@ export default function GuardedSubmitButton({
             <div className="flex justify-end gap-2">
               <button
                 className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-                onClick={() => setOpen(false)}
+                onClick={onClose}
               >
                 閉じる
               </button>
