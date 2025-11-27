@@ -9,6 +9,7 @@ export default function TodoItem({ todo, currentUserId }: { todo: Todo; currentU
   const isOwner = todo.user_id === currentUserId
   return (
     <div className="flex items-center gap-2 rounded border border-gray-200 p-2">
+      <OwnerBadge userId={todo.user_id} />
       <form action={toggleCompleted.bind(null, todo.id, !todo.completed)}>
         <GuardedSubmitButton
           isOwner={isOwner}
@@ -39,7 +40,6 @@ export default function TodoItem({ todo, currentUserId }: { todo: Todo; currentU
           削除
         </GuardedSubmitButton>
       </form>
-      <span className="ml-auto"><OwnerBadge userId={todo.user_id} /></span>
     </div>
   )
 }
