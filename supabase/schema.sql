@@ -24,5 +24,5 @@ create index if not exists todos_user_id_idx on public.todos (user_id, created_a
 drop policy if exists "allow all" on public.todos;
 create policy todos_select_all on public.todos for select using (true);
 create policy todos_insert_own on public.todos for insert with check (user_id = auth.uid());
-create policy todos_update_own on public.todos for update using (user_id = auth.uid());
 create policy todos_delete_own on public.todos for delete using (user_id = auth.uid());
+CREATE POLICY todos_update_own ON public.todos FOR UPDATE TO authenticated USING (user_id = (SELECT auth.uid())) WITH CHECK (user_id = (SELECT auth.uid()));
