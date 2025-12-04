@@ -1,6 +1,7 @@
 'use client'
 import { useRef, useState } from 'react'
 import type { ReactNode } from 'react'
+import { useFormStatus } from 'react-dom'
 
 export default function GuardedSubmitButton({
   isOwner,
@@ -15,6 +16,7 @@ export default function GuardedSubmitButton({
 }) {
   const [open, setOpen] = useState(false)
   const buttonRef = useRef<HTMLButtonElement | null>(null)
+  const { pending } = useFormStatus()
   function onClick(e: React.MouseEvent<HTMLButtonElement>) {
     if (!isOwner) {
       e.preventDefault()
@@ -28,7 +30,13 @@ export default function GuardedSubmitButton({
   }
   return (
     <>
-      <button ref={buttonRef} type="submit" className={className} onClick={onClick}>
+      <button
+        ref={buttonRef}
+        type="submit"
+        className={(className ?? '') + (pending ? ' opacity-50 cursor-not-allowed' : '')}
+        onClick={onClick}
+        disabled={pending}
+      >
         {children}
       </button>
       {open && (
