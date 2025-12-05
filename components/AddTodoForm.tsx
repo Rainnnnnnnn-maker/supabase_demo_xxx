@@ -1,10 +1,19 @@
 'use client'
 import { addTodo } from '@/app/actions/todos'
 import { useFormStatus } from 'react-dom'
+import { type Ref } from 'react'
 
-export default function AddTodoForm() {
+interface AddTodoFormProps {
+  action?: (formData: FormData) => void | Promise<void>
+  formRef?: Ref<HTMLFormElement>
+}
+
+export default function AddTodoForm({ action, formRef }: AddTodoFormProps) {
+  // プロップスが提供されない場合はデフォルトのサーバーアクションを使用
+  const formAction = action || addTodo
+
   return (
-    <form action={addTodo} className="flex gap-2">
+    <form ref={formRef} action={formAction} className="flex gap-2">
       <input
         type="text"
         name="title"

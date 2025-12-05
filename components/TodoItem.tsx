@@ -5,12 +5,36 @@ import OwnerBadge from './OwnerBadge'
 
 type Todo = Database['public']['Tables']['todos']['Row']
 
-export default function TodoItem({ todo, currentUserId }: { todo: Todo; currentUserId: string }) {
+interface TodoItemProps {
+  todo: Todo
+  currentUserId: string
+  optimisticActions?: {
+    toggle: (id: string, completed: boolean) => Promise<void>
+    updateTitle: (id: string, formData: FormData) => Promise<void>
+    delete: (id: string) => Promise<void>
+  }
+}
+
+export default function TodoItem({ todo, currentUserId, optimisticActions }: TodoItemProps) {
   const isOwner = todo.user_id === currentUserId
+
+  // 楽観的更新用のアクションがあればそれを使用し、なければサーバーアクションを直接使用
+  const toggleAction = optimisticActions 
+    ? optimisticActions.toggle.bind(null, todo.id, !todo.completed)
+    : toggleCompleted.bind(null, todo.id, !todo.completed)
+    
+  const updateTitleAction = optimisticActions
+    ? optimisticActions.updateTitle.bind(null, todo.id)
+    : updateTitle.bind(null, todo.id)
+    
+  const deleteAction = optimisticActions
+    ? optimisticActions.delete.bind(null, todo.id)
+    : deleteTodo.bind(null, todo.id)
+
   return (
     <div className="flex items-center gap-2 rounded border border-gray-200 p-2">
       <OwnerBadge userId={todo.user_id} />
-      <form action={toggleCompleted.bind(null, todo.id, !todo.completed)}>
+      <form action={toggleAction}>
         <GuardedSubmitButton
           isOwner={isOwner}
           className={
@@ -22,7 +46,7 @@ export default function TodoItem({ todo, currentUserId }: { todo: Todo; currentU
           {todo.completed ? '完了' : '未完了'}
         </GuardedSubmitButton>
       </form>
-      <form action={updateTitle.bind(null, todo.id)} className="flex flex-1 items-center gap-2">
+      <form action={updateTitleAction} className="flex flex-1 items-center gap-2">
         <input
           name="title"
           defaultValue={todo.title}
@@ -35,7 +59,7 @@ export default function TodoItem({ todo, currentUserId }: { todo: Todo; currentU
           保存
         </GuardedSubmitButton>
       </form>
-      <form action={deleteTodo.bind(null, todo.id)}>
+      <form action={deleteAction}>
         <GuardedSubmitButton isOwner={isOwner} className="rounded bg-red-600 px-3 py-1 text-white hover:bg-red-700">
           削除
         </GuardedSubmitButton>
