@@ -28,3 +28,7 @@ supabase/.branches/
 
 # TypeScript incremental build cache
 *.tsbuildinfo
+
+#Test
+tests/
+test-results/
