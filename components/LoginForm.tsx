@@ -1,9 +1,9 @@
-
 'use client'
 
 import { useActionState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { login, logout } from '@/app/actions/auth'
+import Spinner from './Spinner'
 
 export default function LoginForm() {
   const [state, action] = useActionState(login, { error: '' })
@@ -45,10 +45,11 @@ function LoginButton() {
       type="submit"
       disabled={pending}
       className={
-        'w-full rounded bg-blue-600 px-4 py-2 text-white' +
-        (pending ? ' opacity-50 cursor-not-allowed' : '')
+        'flex w-full items-center justify-center gap-2 rounded bg-blue-600 px-4 py-2 text-white' +
+        (pending ? ' cursor-not-allowed opacity-70' : ' hover:bg-blue-700')
       }
     >
+      {pending && <Spinner className="h-4 w-4 text-white" />}
       {pending ? 'ログイン中...' : 'ログイン'}
     </button>
   )
