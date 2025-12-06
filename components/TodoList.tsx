@@ -6,11 +6,12 @@ type Todo = Database['public']['Tables']['todos']['Row']
 
 export default async function TodoList() {
   const supabase = await getSupabaseServerClient()
-  
-  // ユーザー認証状態の取得（並行して取得可能だが、依存関係があるため順次）
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
-  
-  if (authError || !user) {
+  let userId: string | null = null
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
+    userId = user?.id ?? null
+  } catch {}
+  if (!userId) {
     return (
       <div className="rounded border border-red-300 bg-red-50 p-3 text-sm text-red-700">
         認証が必要です。<a href="/login" className="underline">ログイン</a>してください。
@@ -35,7 +36,7 @@ export default async function TodoList() {
   return (
     <TodoClientList 
       initialTodos={(data ?? []) as Todo[]} 
-      currentUserId={user.id} 
+      currentUserId={userId} 
     />
   )
 }

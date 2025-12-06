@@ -3,7 +3,11 @@ import OwnerBadge from '@/components/OwnerBadge'
 
 export default async function HeaderUser() {
   const supabase = await getSupabaseServerClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
-  return <OwnerBadge userId={user.id} />
+  let userId: string | null = null
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
+    userId = user?.id ?? null
+  } catch {}
+  if (!userId) return null
+  return <OwnerBadge userId={userId} />
 }
