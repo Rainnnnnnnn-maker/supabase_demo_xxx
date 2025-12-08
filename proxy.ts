@@ -3,6 +3,8 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr'
 
 export async function proxy(request: NextRequest) {
   if (process.env.NEXT_USE_PROXY !== 'true') return NextResponse.next({ request })
+  const pathname = request.nextUrl.pathname
+  if (pathname.startsWith('/login')) return NextResponse.next({ request })
   let response = NextResponse.next({ request })
   try {
     const supabase = createServerClient(
@@ -23,8 +25,7 @@ export async function proxy(request: NextRequest) {
     )
 
     const { data: { user } } = await supabase.auth.getUser()
-    const pathname = request.nextUrl.pathname
-    if (!user && !pathname.startsWith('/login')) {
+    if (!user) {
       const url = request.nextUrl.clone()
       url.pathname = '/login'
       return NextResponse.redirect(url)
