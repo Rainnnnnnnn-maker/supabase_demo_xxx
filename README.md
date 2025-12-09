@@ -1,5 +1,10 @@
 # Next.js + Supabase TODO（認証あり／RLS ON）
 
+# ブランチ
+main：本番用（デプロイ用）
+dev：開発用（ローカル開発用）
+issue#xx：各機能開発用（ブランチを切る）
+
 ## 概要
 - Next.js v16（Turbopack） App Router + TypeScript + Tailwind
 - Supabase（`@supabase/ssr` + `@supabase/supabase-js`）+ RLS（認証必須／ユーザー別アクセス）
